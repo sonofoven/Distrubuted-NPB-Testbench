@@ -1,0 +1,37 @@
+- name: Install necessary packages
+  hosts: aws_machines
+  become: true
+  tasks:
+   - name: Apt install packages
+     ansible.builtin.apt:
+       name:
+         - build-essential
+         - openmpi-bin
+         - openmpi-doc
+         - libopenmpi-dev
+       state: present
+       update-cache: true
+
+- name: Download NPB tests
+  hosts: aws_machines
+  become: true
+  tasks:
+   - name: Pull down NPB 3.4.3
+     ansible.builtin.get_url:
+       url: "https://www.nas.nasa.gov/assets/npb/NPB3.4.3.tar.gz"
+       dest: /home/ubuntu/
+       mode: "0777"
+
+   - name: Extract NPB archive
+     ansible.builtin.unarchive:
+       src: /home/ubuntu/NPB3.4.3.tar.gz
+       dest: /home/ubuntu/
+       remote_src: true # Src file is on remote machine
+
+   - name: Clean up useless archive
+     ansible.builtin.file:
+      path: /home/ubuntu/NPB3.4.3.tar.gz
+      state: absent
+
+   - name: 
+   
