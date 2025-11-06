@@ -1,3 +1,5 @@
 ansible/keys
 cmds
-.terraform
+.terraform/
+.DS_Store
+.terraform.lock.hcl

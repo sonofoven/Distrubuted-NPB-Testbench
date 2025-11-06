@@ -2,36 +2,66 @@
   hosts: aws_machines
   become: true
   tasks:
+   - name: Ensure apt cache is updated
+     ansible.builtin.apt:
+      update_cache: true
+      cache_valid_time: 1
+
    - name: Apt install packages
      ansible.builtin.apt:
        name:
          - build-essential
+         - libopenmpi-dev
          - openmpi-bin
          - openmpi-doc
-         - libopenmpi-dev
        state: present
-       update-cache: true
 
-- name: Download NPB tests
+- name: Download & Install NPB
   hosts: aws_machines
-  become: true
+  become: false
   tasks:
    - name: Pull down NPB 3.4.3
      ansible.builtin.get_url:
        url: "https://www.nas.nasa.gov/assets/npb/NPB3.4.3.tar.gz"
-       dest: /home/ubuntu/
-       mode: "0777"
+       dest: ~/
 
    - name: Extract NPB archive
      ansible.builtin.unarchive:
-       src: /home/ubuntu/NPB3.4.3.tar.gz
-       dest: /home/ubuntu/
+       src: ~/NPB3.4.3.tar.gz
+       dest: ~/
        remote_src: true # Src file is on remote machine
 
    - name: Clean up useless archive
      ansible.builtin.file:
-      path: /home/ubuntu/NPB3.4.3.tar.gz
+      path: ~/NPB3.4.3.tar.gz
       state: absent
 
-   - name: 
-   
+   - name: Rename default build template # Makes the "make" work
+     ansible.builtin.copy:
+      src: ~/NPB3.4.3/NPB3.4-MPI/config/make.def.template
+      dest: ~/NPB3.4.3/NPB3.4-MPI/config/make.def
+      remote_src: true
+
+   - name: Make necessary tests
+     ansible.builtin.shell: >
+      make bt CLASS=S; 
+      make bt CLASS=W; 
+      make bt CLASS=A;
+      make bt CLASS=B;
+      make bt CLASS=C;
+      make bt CLASS=D;
+      make bt CLASS=E;
+      make bt CLASS=F;
+      cp bin/* ~;
+     args:
+      chdir: ~/NPB3.4.3/NPB3.4-MPI
+      creates: 
+        - ~/bt.S.x
+        - ~/bt.W.x
+        - ~/bt.A.x
+        - ~/bt.B.x
+        - ~/bt.C.x
+        - ~/bt.D.x
+        - ~/bt.E.x
+        - ~/bt.F.x
+
