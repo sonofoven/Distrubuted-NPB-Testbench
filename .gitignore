@@ -3,3 +3,6 @@ cmds
 .terraform/
 .DS_Store
 .terraform.lock.hcl
+clientkey.pem
+**/*.tfstate
+**/*.tfstate.*.backup

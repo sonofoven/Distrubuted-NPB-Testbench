@@ -16,9 +16,11 @@
          - openmpi-doc
        state: present
 
-- name: Download & Install NPB
+- name: Download, Install, and Setup NPB
   hosts: aws_machines
   become: false
+  vars:
+    ssh_user: ubuntu
   tasks:
    - name: Pull down NPB 3.4.3
      ansible.builtin.get_url:
@@ -42,26 +44,70 @@
       dest: ~/NPB3.4.3/NPB3.4-MPI/config/make.def
       remote_src: true
 
+   - name: Create test dirs
+     ansible.builtin.file:
+       path: /home/ubuntu/npbTests
+       state: directory
+
    - name: Make necessary tests
      ansible.builtin.shell: >
-      make bt CLASS=S; 
-      make bt CLASS=W; 
-      make bt CLASS=A;
-      make bt CLASS=B;
-      make bt CLASS=C;
-      make bt CLASS=D;
-      make bt CLASS=E;
-      make bt CLASS=F;
-      cp bin/* ~;
+      make cg CLASS=S; 
+      make cg CLASS=W; 
+      make cg CLASS=A;
+      make cg CLASS=B;
+      make cg CLASS=C;
+      make cg CLASS=D;
+      make cg CLASS=E;
+      mv bin/* ~/npbTests;
      args:
       chdir: ~/NPB3.4.3/NPB3.4-MPI
-      creates: 
-        - ~/bt.S.x
-        - ~/bt.W.x
-        - ~/bt.A.x
-        - ~/bt.B.x
-        - ~/bt.C.x
-        - ~/bt.D.x
-        - ~/bt.E.x
-        - ~/bt.F.x
+      creates: "{{ ansible_facts.env.HOME }}/npbTests/cg.{{ item }}.x"
+     loop:
+       - S
+       - W
+       - A
+       - B
+       - C
+       - D
+       - E
+
+   - name: Copy priv key over to host # Makes the "make" work
+     ansible.builtin.copy:
+      src: keys/clientkey.pem
+      dest: ~/.ssh/id_ed25519 # Rename to default ssh priv key name
+      remote_src: false
+      mode: "0400"
+     run_once: true
+     delegate_to: "{{ groups['aws_machines'][0] }}"
+
+   - name: Disable StrictHostKeyChecking for all users (stops mpirun from hanging)
+     become: true
+     ansible.builtin.copy:
+       dest: /etc/ssh/ssh_config.d/99-nohostkey.conf
+       content: |
+         Host *
+             StrictHostKeyChecking no
+             UserKnownHostsFile /dev/null
+             LogLevel ERROR
+       mode: '0644'
+
+- name: Copy over hosts and test files
+  hosts: aws_machines
+  become: false
+  tasks:
+   - name: Copy over hosts
+     ansible.builtin.copy:
+       src: ../hosts
+       dest: ~/
+       mode: preserve
+     run_once: true
+     delegate_to: "{{ groups['aws_machines'][0] }}"
+
+   - name: Copy over tests
+     ansible.builtin.copy:
+       src: ../tests/
+       dest: ~/tests
+       mode: preserve
+     run_once: true
+     delegate_to: "{{ groups['aws_machines'][0] }}"
 
