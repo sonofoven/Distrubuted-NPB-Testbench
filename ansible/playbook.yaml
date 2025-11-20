@@ -79,6 +79,12 @@
        dest: /home/ubuntu/logging/monitor_node.sh
        mode: preserve
 
+   - name: Copy over baseline measurement tool 
+     ansible.builtin.copy:
+       src: ../logging/baseline.sh
+       dest: /home/ubuntu/logging/baseline.sh
+       mode: preserve
+
    - name: Make necessary tests
      ansible.builtin.shell: >
       make cg CLASS=S; 
