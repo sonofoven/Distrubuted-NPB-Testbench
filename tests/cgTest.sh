@@ -19,7 +19,7 @@ echo "Wait for Mon proc to start on nodes..."
 sleep 5
 
 # Start
-mpirun --hostfile ../hosts -np 4 --map-by node --rank-by node ~/npbTests/"cg.$1.x"
+mpirun --hostfile ../hosts -np 8 --oversubscribe --map-by node --rank-by node ~/npbTests/"cg.$1.x"
 
 # Wait for Monitoring Proc to finish...
 echo "Wait for Mon proc to finish on nodes..."
