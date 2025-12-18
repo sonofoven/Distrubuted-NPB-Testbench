@@ -46,7 +46,7 @@ Although it was developed for an academic performance study, this repo is struct
 │   ├── azureSetup.py        # Terraform + Ansible driver for Azure
 │   ├── main.tf
 │   ├── outputs.tf
-│   ├── terraform.tfstate.backup
+│   ├── terraform.tf
 │   └── variables.tf
 ├── gcp
 │   ├── gcpSetup.py          # Terraform + Ansible driver for GCP
