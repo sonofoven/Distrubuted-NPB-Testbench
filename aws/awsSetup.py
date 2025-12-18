@@ -2,7 +2,6 @@ from python_terraform import Terraform
 import ansible_runner
 import tempfile
 import os
-import json
 
 print("AWS NPB Testbench")
 
@@ -39,31 +38,33 @@ with open(hostsFile, 'w') as file:
     file.write(f"{thirdPrivIp} slots={slotNum}\n")
 
 # Start ansbile runner with special inventory
-scriptDir = os.path.dirname(os.path.abspath(__file__)) 
+scriptDir = os.path.dirname(os.path.abspath(__file__))
 privKeyPath = os.path.join(scriptDir, '..', 'ansible', 'keys', 'clientkey.pem')
 
 inventoryData = {
-        'all': {
-            'vars': {
-                'ansible_user': 'ubuntu',
-                'ansible_ssh_private_key_file': privKeyPath,
-                'ansible_ssh_common_args': "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
-            },
-            'children': {
-                'machines': {
-                    'hosts': {
-                        masterPubIp: {},
-                        secondPubIp: {},
-                        thirdPubIp: {}
-                }
-            }
-        }
-    }
+   'all': {
+       'vars': {
+           'ansible_user': 'ubuntu',
+           'ansible_ssh_private_key_file': privKeyPath,
+           'ansible_ssh_common_args': """-o StrictHostKeyChecking=no
+                                       -o UserKnownHostsFile=/dev/null"""
+       },
+       'children': {
+           'machines': {
+               'hosts': {
+                   masterPubIp: {},
+                   secondPubIp: {},
+                   thirdPubIp: {}
+               }
+           }
+       }
+   }
 }
 
 
 playFile = '../ansible/playbook.yaml'
-playAbsPath = os.path.abspath(os.path.join(os.path.dirname(__file__), playFile))
+playAbsPath = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                              playFile))
 
 print("Starting ansible...")
 

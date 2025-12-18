@@ -9,3 +9,5 @@ aws/aws
 **/*.tfstate.backup
 *.backup
 *tfstate*
+*terraform*
+!terraform.tf
